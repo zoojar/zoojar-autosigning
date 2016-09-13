@@ -35,7 +35,7 @@ include ::autosigning
 ## Default Behaviour
 The default behaviour of `autosigning.sh` is:
 
-1. Check the certname of the new node against the the MoM's configured dns_alt_names - if a match exists then the compile master is signed and classfied using an additional external script and the autosigning.sh script is not used.
+1. Check the certname of the new node against the the MoM's configured dns_alt_names - if a match exists then the compile master is signed and classified using an additional external script and the autosigning.sh script is not used (policy exe exits with 1 to instrict the master not to sign this node - [autosigning is not supported with dns_alt_names](https://tickets.puppetlabs.com/browse/SERVER-572)).
 
 2. Compare `Challenge Password` (1.2.840.113549.1.9.7) with the contents of `global-psk` to authorize the node.
 New nodes will need to provide the `Challenge Password` upon cert request, this can be enabled by populating `csr_attributes.yaml`:
