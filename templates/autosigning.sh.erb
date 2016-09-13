@@ -1,0 +1,26 @@
+#!/bin/bash
+csr=$(< /dev/stdin)
+certname=$1
+textformat=$(echo "$csr" | openssl req -noout -text)
+global_psk=$(cat /etc/puppetlabs/puppet/global-psk)
+add_compile_master_script=/etc/puppetlabs/puppet/add_compile_master.sh
+
+# Get the list of dns_alt_names to check if this is a new compiler master waiting to be signed....
+IFS=',' read -a dns_alt_names_array <<< "$(puppet config print dns_alt_names_array --section master)"
+for dns_alt_name in $dns_alt_names_array; do
+  if [ "$certname" = "$dns_alt_name" ]; then
+    if [ "$(echo $textformat | grep -Po $global_psk)" = "$global_psk" ]; then
+      echo -e "\n$(date) INFO: Autosigning & classifying new compile master $certname." >> /tmp/autosign.log
+      $add_compile_master_script $certname
+      exit 1 # break the executable to prevent this master from signing this node
+    fi
+  fi
+done
+
+if [ "$(echo $textformat | grep -Po $global_psk)" = "$global_psk" ]; then
+  echo -e "\n$(date) INFO: Autosigning $certname." >> /tmp/autosign.log
+  exit 0
+else
+  echo -e "\n$(date) INFO: Not autosigning $certname - psk does not match." >> /tmp/autosign.log
+  exit 1
+fi

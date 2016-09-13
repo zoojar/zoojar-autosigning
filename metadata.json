@@ -1,0 +1,35 @@
+{
+  "name": "zoojar-autosigning",
+  "version": "0.0.1",
+  "author": "David Newton",
+  "summary": "Configures autosigning on a master of masters to autosign both agents and compile masters",
+  "license": "Apache",
+  "source": "https://github.com/zoojar/zoojar-autosigning",
+  "project_page": "https://github.com/zoojar/zoojar-autosigning",
+  "issues_url": "https://github.com/zoojar/zoojar-autosigning",
+  "dependencies": [   
+    {
+      "name": "puppetlabs-stdlib",
+      "version_requirement": ">= 4.0.0 < 5.0.0"
+    },
+    {
+      "name": "puppetlabs-inifile",
+      "version_requirement": ">= 1.6.0 < 1.7.0"
+    }
+  ]
+  ,
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "CentOS",
+      "operatingsystemrelease": [
+        "7"
+      ]
+    },
+    {
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "7"
+      ]
+    }
+  ]
+}
