@@ -11,7 +11,7 @@
 Configures autosigning on a master of masters to autosign both agents and compile masters.
 
 ## Description
-This module will create a BASH script, `autosigning.sh` and a file `autosigning.key`, that the Puppet Master of Masters (MoM) will use as the key and [autosigning policy executable](https://docs.puppet.com/puppet/latest/reference/ssl_autosign.html#policy-based-autosigning) to sign new agents and compile masters.
+This module will create a BASH script, `autosigning.sh` and a file `autosigning.key`, that the Puppet Master of Masters (MoM) will use as the key and [autosigning policy executable](https://docs.puppet.com/puppet/latest/reference/ssl_autosign.html#policy-based-autosigning) to sign new agents and compile masters. It's a solution to the fact that [autosigning is not supported with dns_alt_names](https://tickets.puppetlabs.com/browse/SERVER-572).
 
 ## Setup
 ### What autosigning affects
