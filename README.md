@@ -16,7 +16,7 @@ This module will create a BASH script, `autosigning.sh` and a file `autosigning.
 ## Setup
 ### What autosigning affects
 * Creates and manages the autosigning policy executable `/etc/puppetlabs/puppet/autosigning.sh`.
-* Creates and manages the autosigning policy executable key '/etc/puppetlabs/puppet/autosigning.key`.
+* Creates and manages the autosigning policy executable key `/etc/puppetlabs/puppet/autosigning.key`.
 * ini_setting `autosign` in the master section of `/etc/puppetlabs/puppet/puppet.conf`.
 * Creates and manages an additional script `/etc/puppetlabs/puppet/add_compile_master.sh`.
 * Node classification group: `PE Master` - new compile masters are pinned to this group via the classifier api.
@@ -37,7 +37,7 @@ The default behaviour of `autosigning.sh` is:
 
 1. Check the certname of the new node against the the MoM's configured dns_alt_names - if a match exists then the compile master is signed and classified using an additional external script and the autosigning.sh script is not used (policy exe exits with 1 to instrict the master not to sign this node - [autosigning is not supported with dns_alt_names](https://tickets.puppetlabs.com/browse/SERVER-572)).
 
-2. Compare `Challenge Password` (1.2.840.113549.1.9.7) with the contents of `global-psk` to authorize the node.
+2. Compare `Challenge Password` (1.2.840.113549.1.9.7) with the contents of `/etc/puppetlabs/puppet/autosigning.key` to authorize the node.
 New nodes will need to provide the `Challenge Password` upon cert request, this can be enabled by populating `csr_attributes.yaml`:
 
 ```
