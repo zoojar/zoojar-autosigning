@@ -28,7 +28,7 @@ class autosigning (
     content => $policy_exe_file_content,
     mode    => '0500',
     owner   => 'pe-puppet',
-    require => File[$key_file],
+    require => File[$key_file_agent,$key_file_compiler],
   }
 
   file { $key_file_agent:
