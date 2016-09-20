@@ -40,7 +40,7 @@ fi
 echo -e "\n$(date) INFO: Classifying $certname as a new compiler." >> $log_file
 curl $NC_CURL_OPT -X POST -H 'Content-Type: application/json' -d "{\"nodes\": [\"$certname\"]}" "https://localhost:4433/classifier-api/v1/groups/$(group_id 'PE Master')/pin"
 
-echo -e "\n$(date) INFO: Waiting for report from node $certname containing 'pe_master'."
+echo -e "\n$(date) INFO: Waiting for report from node $certname containing 'Pe_hocon_setting[pe-puppetserver.enable-file-sync-locking]'."
 retry_count=0
 report_response=""
 until [[ "$report_response" == "Pe_hocon_setting[pe-puppetserver.enable-file-sync-locking]" || "$retry_count" -gt "$max_attempts" ]]; do

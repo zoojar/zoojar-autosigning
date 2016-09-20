@@ -10,6 +10,10 @@ certname=$1
 
 textformat=$(echo "$csr" | openssl req -noout -text)
 
+
+$(openssl req -noout -text -in "/var/lib/puppet/ssl/ca/requests/$HOST.pem" | grep "challengePassword" |
+awk -F ":" '{print$2}')
+
 key_file_agent='<%= $autosigning::key_file_agent %>'
 key_agent=$(cat $key_file_agent)
 key_file_compiler='<%= $autosigning::key_file_compiler %>'
@@ -17,23 +21,23 @@ key_compiler=$(cat $key_file_compiler)
 
 add_compile_master_script='/etc/puppetlabs/puppet/add_compile_master.sh'
 
-csr_key=$(grep -oP '(?<=challengePassword :).*?(?= Signature)' <<< "$textformat")
+csr_key=$(grep -oP '(?<=challengePassword :).*?(?= Signature)' <<< $(echo $textformat))
 
 case $csr_key in
   
   "$key_agent")
-    echo -e "\n$(date) INFO: Autosigning $certname (exiting with \'0\')."
+    echo -e "\n$(date) INFO: Autosigning $certname (exiting with '0')."
     exit 0
   ;;
 
   "$key_compiler")
-    echo -e "\n$(date) INFO: Autosigning & classifying new compile master $certname; executing \'$add_compile_master_script $certname\' and then exiting with \'1\'." 
-    $add_compile_master_script $certname
+    echo -e "\n$(date) INFO: Autosigning & classifying new compile master $certname; executing '$add_compile_master_script $certname' and then exiting with 1." 
+    $add_compile_master_script $certname > /dev/null 2>&1 &
     exit 1
   ;;
   
   *)
-    echo -e "\n$(date) INFO: No key match for agent () or compiler (exiting with \'1\')."
+    echo -e "\n$(date) INFO: No key match for agent () or compiler (exiting with 1)."
     exit 1
   ;;
 
