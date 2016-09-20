@@ -15,9 +15,9 @@ key_agent=$(cat $key_file_agent)
 key_file_compiler='<%= $autosigning::key_file_compiler %>'
 key_compiler=$(cat $key_file_compiler)
 
-add_compile_master_script='/etc/puppetlabs/puppet/add_compile_master.sh'
+add_compile_master_script='<%= $autosigning::add_compile_master_file %>'
 
-csr_key=$(grep -oP '(?<=challengePassword :).*?(?= Signature)' <<< $(echo $textformat))
+csr_key=$(grep -oP '(?<=challengePassword :).*?(?= )' <<< $(echo $textformat))
 
 case $csr_key in
   
