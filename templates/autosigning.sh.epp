@@ -10,10 +10,6 @@ certname=$1
 
 textformat=$(echo "$csr" | openssl req -noout -text)
 
-
-$(openssl req -noout -text -in "/var/lib/puppet/ssl/ca/requests/$HOST.pem" | grep "challengePassword" |
-awk -F ":" '{print$2}')
-
 key_file_agent='<%= $autosigning::key_file_agent %>'
 key_agent=$(cat $key_file_agent)
 key_file_compiler='<%= $autosigning::key_file_compiler %>'
