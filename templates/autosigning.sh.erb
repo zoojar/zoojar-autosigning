@@ -1,26 +1,40 @@
 #!/bin/bash
+# Autosigning policy executable for PE 2016.x.x.
+# Autosigns agents and compilers (using add_compile_master.sh) with the use of pre-shared keys.
+
+log_file='/var/log/puppetlabs/puppetserver/autosigning.log'
+exec > >(tee -a $log_file) 2>&1
+
 csr=$(< /dev/stdin)
 certname=$1
+
 textformat=$(echo "$csr" | openssl req -noout -text)
-global_psk=$(cat /etc/puppetlabs/puppet/global-psk)
-add_compile_master_script=/etc/puppetlabs/puppet/add_compile_master.sh
 
-# Get the list of dns_alt_names to check if this is a new compiler master waiting to be signed....
-IFS=',' read -a dns_alt_names_array <<< "$(puppet config print dns_alt_names_array --section master)"
-for dns_alt_name in $dns_alt_names_array; do
-  if [ "$certname" = "$dns_alt_name" ]; then
-    if [ "$(echo $textformat | grep -Po $global_psk)" = "$global_psk" ]; then
-      echo -e "\n$(date) INFO: Autosigning & classifying new compile master $certname." >> /tmp/autosign.log
-      $add_compile_master_script $certname
-      exit 1 # break the executable to prevent this master from signing this node
-    fi
-  fi
-done
+key_file_agent='<%= @key_file_agent %>'
+key_agent=$(cat $key_file_agent)
+key_file_compiler='<%= @key_file_compiler %>'
+key_compiler=$(cat $key_file_compiler)
 
-if [ "$(echo $textformat | grep -Po $global_psk)" = "$global_psk" ]; then
-  echo -e "\n$(date) INFO: Autosigning $certname." >> /tmp/autosign.log
-  exit 0
-else
-  echo -e "\n$(date) INFO: Not autosigning $certname - psk does not match." >> /tmp/autosign.log
-  exit 1
-fi
+add_compile_master_script='/etc/puppetlabs/puppet/add_compile_master.sh'
+
+csr_key=$(grep -oP '(?<=challengePassword :).*?(?= Signature)' <<< "$textformat")
+
+case $csr_key in
+  
+  "$key_agent")
+    echo -e "\n$(date) INFO: Autosigning $certname (exiting with \'0\')."
+    exit 0
+  ;;
+
+  "$key_compiler")
+    echo -e "\n$(date) INFO: Autosigning & classifying new compile master $certname; executing \'$add_compile_master_script $certname\' and then exiting with \'1\'." 
+    $add_compile_master_script $certname
+    exit 1
+  ;;
+  
+  *)
+    echo -e "\n$(date) INFO: No key match for agent () or compiler (exiting with \'1\')."
+    exit 1
+  ;;
+
+esac

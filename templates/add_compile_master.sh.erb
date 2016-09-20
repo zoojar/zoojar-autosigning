@@ -1,7 +1,9 @@
 #!/bin/bash
-# Adds a new compile master (already specified in dns_alt_names), requires the agent on the new compiler to run 3 times within 10 minutes
+# Adds a new compile master, requires the agent on the new compiler to run 3 times within 20 minutes.
+# Requires one argument; $certname of the new compiler to be signed.
 
 log_file='/var/log/puppetlabs/puppetserver/add_compile_master.log'
+exec > >(tee -a $log_file) 2>&1
 certname=$1
 max_attempts=60
 retry_interval=10
@@ -19,36 +21,38 @@ group_id()
   echo $(curl $NC_CURL_OPT https://localhost:4433/classifier-api/v1/groups | python -m json.tool | grep -C 2 "$1" | grep "id" | cut -d: -f2 | sed 's/[\", ]//g')
 }
 
-echo -e "\n$(date) INFO: Signing a new compile master: $certname." >> $log_file
+echo -e "\n$(date) INFO: Signing a new compile master: $certname."
 puppet cert --allow-dns-alt-names sign $certname
 
-echo -e "\n$(date) INFO: Waiting for 1st report from node $certname." >> $log_file 
+echo -e "\n$(date) INFO: Waiting for 1st report from node $certname."
 retry_count=0
-until [ "$report_response" == "Applied catalog" || "$retry_count" -gt "$max_attempts" ]; do
-  report_response="$(curl -X GET http://localhost:8080/pdb/query/v4/reports -d "query=[\"=\", \"certname\", \"$certname\"]\' -d \'order_by=[{\"field\": \"receive_time\", \"order\": \"desc\"}]" -d 'limit=1' | grep 'Applied catalog' -Po)"
+report_response=""
+until [[ "$report_response" == "Applied catalog" || "$retry_count" -gt "$max_attempts" ]]; do
+  report_response="$(curl -X GET http://localhost:8080/pdb/query/v4/reports -d "query=[\"=\", \"certname\", \"$certname\"]\' -d \'order_by=[{\"field\": \"receive_time\", \"order\": \"desc\"}]" -d 'limit=1' | grep 'Applied catalog' -Po | head -1)"
   (( retry_count++ ))
   sleep $retry_interval
 done
 if [ "$retry_count" -ge "$max_attempts" ]; then
-  echo -e "\n$(date) FAIL: Timed out waiting for 1st report from node $certname, aborting." >> $log_file 
+  echo -e "\n$(date) FAIL: Timed out waiting for 1st report from node $certname, aborting." 
   exit 1
 fi
 
 echo -e "\n$(date) INFO: Classifying $certname as a new compiler." >> $log_file
-curl -X POST -H 'Content-Type: application/json' -d "{\"nodes\": [\"baz.tld\"]}" "https://localhost:4433/classifier-api/v1/groups/$(group_id 'PE Master')/pin"
+curl $NC_CURL_OPT -X POST -H 'Content-Type: application/json' -d "{\"nodes\": [\"$certname\"]}" "https://localhost:4433/classifier-api/v1/groups/$(group_id 'PE Master')/pin"
 
-echo -e "\n$(date) INFO: Waiting for report from node $certname containing 'pe_master'." >> $log_file
+echo -e "\n$(date) INFO: Waiting for report from node $certname containing 'pe_master'."
 retry_count=0
-until [ "$report_response" == "Applied catalog" || "$retry_count" -gt "$max_attempts" ]; do
-  report_response="$(curl -X GET http://localhost:8080/pdb/query/v4/reports -d "query=[\"=\", \"certname\", \"$certname\"]\' -d \'order_by=[{\"field\": \"receive_time\", \"order\": \"desc\"}]" -d 'limit=1' | grep 'Applied catalog <pe_master>' -Po)"
+report_response=""
+until [[ "$report_response" == "Pe_hocon_setting[pe-puppetserver.enable-file-sync-locking]" || "$retry_count" -gt "$max_attempts" ]]; do
+  report_response="$(curl -X GET http://localhost:8080/pdb/query/v4/reports -d "query=[\"=\", \"certname\", \"$certname\"]\' -d \'order_by=[{\"field\": \"receive_time\", \"order\": \"desc\"}]" -d 'limit=1' | grep 'Pe_hocon_setting\[pe-puppetserver\.enable-file-sync-locking\]' -Po | head -1)"
   (( retry_count++ ))
   sleep $retry_interval
 done
 if [ "$retry_count" -ge "$max_attempts" ]; then
-  echo -e "\n$(date) FAIL: Timed out waiting for pe_master report from node $certname, aborting." >> $log_file 
+  echo -e "\n$(date) FAIL: Timed out waiting for pe_master report from node $certname, aborting." 
   exit 1
 fi
 
-echo -e "\n$(date) INFO: Running 'puppet agent -t' on this MOM." >> $log_file
-#<Fork this and exit...>
+echo -e "\n$(date) INFO: Running 'puppet agent -t' on this MOM." 
+puppet agent -t > /dev/null 2>&1 &
 exit 0

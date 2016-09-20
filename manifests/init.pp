@@ -10,12 +10,14 @@
 #   Default: erb template containing bash script to sign, classify and add a new compile master
 #   - this script is called by the autosigning.sh script upon node cert request.
 #
-#
+
 class autosigning (
   $policy_exe_file                 = $autosigning::params::policy_exe_file,
   $policy_exe_file_content         = $autosigning::params::policy_exe_file_content,
-  $key_file                        = $autosigning::params::key_file,
-  $key_content                     = $autosigning::params::key_content,
+  $key_file_agent                  = $autosigning::params::key_file_agent,
+  $key_content_agent               = $autosigning::params::key_content_agent,
+  $key_file_compiler               = $autosigning::params::key_file_compiler,
+  $key_content_compiler            = $autosigning::params::key_content_compiler,
   $puppet_conf_file                = $autosigning::params::puppet_conf_file,
   $add_compile_master_file         = $autosigning::params::add_compile_master_file,
   $add_compile_master_file_content = $autosigning::params::add_compile_master_file_content,
@@ -29,9 +31,16 @@ class autosigning (
     require => File[$key_file],
   }
 
-  file { $key_file:
+  file { $key_file_agent:
     ensure  => file,
-    content => $key_content,
+    content => $key_content_agent,
+    mode    => '0600',
+    owner   => 'pe-puppet',
+  }
+  
+  file { $key_file_compiler:
+    ensure  => file,
+    content => $key_content_compiler,
     mode    => '0600',
     owner   => 'pe-puppet',
   }
@@ -51,7 +60,11 @@ class autosigning (
     setting => 'autosign',
     value   => $policy_exe_file,
     require => File[$policy_exe_file],
-    notify  => Service['pe-puppetserver'],
+  }
+
+  service { 'pe-puppetserver':
+    ensure    => running,
+    subscribe => Ini_setting["autosign ${policy_exe_file}"],
   }
 
 }
