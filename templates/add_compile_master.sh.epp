@@ -35,7 +35,7 @@ if [ "$retry_count" -ge "$max_attempts" ]; then
 fi
 
 echo -e "\n$(date) INFO: Classifying $certname as a new compiler." >> $log_file
-curl $NC_CURL_OPT -X POST -H 'Content-Type: application/json' -d "{\"nodes\": [\"$certname\"]}" "https://localhost:4433/classifier-api/v1/groups/$group_id)/pin"
+curl $NC_CURL_OPT -X POST -H 'Content-Type: application/json' -d "{\"nodes\": [\"$certname\"]}" "https://localhost:4433/classifier-api/v1/groups/$group_id/pin"
 
 echo -e "\n$(date) INFO: Waiting for report from node $certname containing 'Pe_hocon_setting[pe-puppetserver.enable-file-sync-locking]'."
 retry_count=0
