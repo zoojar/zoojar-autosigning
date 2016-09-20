@@ -1,6 +1,6 @@
 {
   "name": "zoojar-autosigning",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "author": "David Newton",
   "summary": "Configures autosigning on a master of masters to autosign both agents and compile masters",
   "license": "Apache",

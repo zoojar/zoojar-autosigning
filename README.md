@@ -36,7 +36,7 @@ puppet apply -e "class { autosigning: key_content_compiler => '4d313842f4f5f4ba5
 ```
 
 ## Default Behaviour
-The default behaviour of `autosigning.sh` (included as an optional erb template for the policy executable):
+The default behaviour of `autosigning.sh` (included as an optional epp template for the policy executable):
 
 1. Compare `Challenge Password` (1.2.840.113549.1.9.7) with the contents of both agent and compile master keys.
 2. If the agent key is matched then the script is exited with '0' to instruct the MoM to sign this node as normal.

@@ -10,9 +10,9 @@ certname=$1
 
 textformat=$(echo "$csr" | openssl req -noout -text)
 
-key_file_agent='<%= @key_file_agent %>'
+key_file_agent='<%= $autosigning::key_file_agent %>'
 key_agent=$(cat $key_file_agent)
-key_file_compiler='<%= @key_file_compiler %>'
+key_file_compiler='<%= $autosigning::key_file_compiler %>'
 key_compiler=$(cat $key_file_compiler)
 
 add_compile_master_script='/etc/puppetlabs/puppet/add_compile_master.sh'
