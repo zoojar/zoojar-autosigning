@@ -41,8 +41,8 @@ The default behaviour of `autosigning.sh` (included as an optional epp template 
 1. Compare `Challenge Password` (1.2.840.113549.1.9.7) with the contents of both agent and compile master keys.
 2. If the agent key is matched then the script is exited with '0' to instruct the MoM to sign this node as normal.
 3. If the compiler key is matched then the add_compile_master.sh script is called to;
--- Sign and classify the new compile master.
--- The script is exited with '1' to prevent the MoM from signing the node.
+Sign and classify the new compile master.
+The script is exited with '1' to prevent the MoM from signing the node.
 
 New nodes will need to provide the `Challenge Password` upon cert request, 
 this can be enabled by populating `csr_attributes.yaml`:
