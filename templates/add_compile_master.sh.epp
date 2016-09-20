@@ -16,10 +16,7 @@ declare -x PE_CA=$(puppet agent --configprint localcacert)
 declare -x PE_CERTNAME=$(puppet agent --configprint certname)
 declare -x NC_CURL_OPT="-s --cacert $PE_CA --cert $PE_CERT --key $PE_KEY --insecure"
 
-group_id()
-{
-  echo $(curl $NC_CURL_OPT https://localhost:4433/classifier-api/v1/groups | python -m json.tool | grep -C 2 "$1" | grep "id" | cut -d: -f2 | sed 's/[\", ]//g')
-}
+group_id=$(curl $NC_CURL_OPT https://localhost:4433/classifier-api/v1/groups | python -m json.tool | grep -C 2 "PE Master" | grep "id" | cut -d: -f2 | sed 's/[\", ]//g')
 
 echo -e "\n$(date) INFO: Signing a new compile master: $certname."
 puppet cert --allow-dns-alt-names sign $certname
@@ -38,7 +35,7 @@ if [ "$retry_count" -ge "$max_attempts" ]; then
 fi
 
 echo -e "\n$(date) INFO: Classifying $certname as a new compiler." >> $log_file
-curl $NC_CURL_OPT -X POST -H 'Content-Type: application/json' -d "{\"nodes\": [\"$certname\"]}" "https://localhost:4433/classifier-api/v1/groups/$(group_id 'PE Master')/pin"
+curl $NC_CURL_OPT -X POST -H 'Content-Type: application/json' -d "{\"nodes\": [\"$certname\"]}" "https://localhost:4433/classifier-api/v1/groups/$group_id)/pin"
 
 echo -e "\n$(date) INFO: Waiting for report from node $certname containing 'Pe_hocon_setting[pe-puppetserver.enable-file-sync-locking]'."
 retry_count=0
