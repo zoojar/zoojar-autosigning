@@ -12,20 +12,20 @@
 #
 
 class autosigning (
-  $policy_exe_file                 = $autosigning::params::policy_exe_file,
-  $policy_exe_file_content         = $autosigning::params::policy_exe_file_content,
-  $key_file_agent                  = $autosigning::params::key_file_agent,
-  $key_content_agent               = $autosigning::params::key_content_agent,
-  $key_file_compiler               = $autosigning::params::key_file_compiler,
-  $key_content_compiler            = $autosigning::params::key_content_compiler,
-  $puppet_conf_file                = $autosigning::params::puppet_conf_file,
-  $add_compile_master_file         = $autosigning::params::add_compile_master_file,
-  $add_compile_master_file_content = $autosigning::params::add_compile_master_file_content,
+  $policy_exe_file                  = $autosigning::params::policy_exe_file,
+  $policy_exe_file_template         = $autosigning::params::policy_exe_file_template,
+  $key_file_agent                   = $autosigning::params::key_file_agent,
+  $key_content_agent                = $autosigning::params::key_content_agent,
+  $key_file_compiler                = $autosigning::params::key_file_compiler,
+  $key_content_compiler             = $autosigning::params::key_content_compiler,
+  $puppet_conf_file                 = $autosigning::params::puppet_conf_file,
+  $add_compile_master_file          = $autosigning::params::add_compile_master_file,
+  $add_compile_master_file_template = $autosigning::params::add_compile_master_file_template,
 ) inherits ::autosigning::params {
 
   file { $policy_exe_file:
     ensure  => file,
-    content => $policy_exe_file_content,
+    content => epp($policy_exe_file_template),
     mode    => '0500',
     owner   => 'pe-puppet',
     require => File[$key_file_agent,$key_file_compiler],
@@ -47,7 +47,7 @@ class autosigning (
 
   file { $add_compile_master_file:
     ensure  => file,
-    content => $add_compile_master_file_content,
+    content => epp($add_compile_master_file_template),
     mode    => '0500',
     owner   => 'pe-puppet',
     before  => File[$policy_exe_file],
